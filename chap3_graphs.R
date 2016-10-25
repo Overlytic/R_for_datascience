@@ -276,7 +276,8 @@ bar + coord_flip()
 bar + coord_polar()
 
 
-"
+" GENERAL FORM OF A PLOT
+
 ggplot(data = <DATA>) + 
   <GEOM_FUNCTION>(
      mapping = aes(<MAPPINGS>),
