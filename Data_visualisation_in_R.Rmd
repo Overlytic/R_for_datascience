@@ -7,29 +7,288 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
 ```
 
-## R Markdown
+## Introduction
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This project is focused on chapter 3 of the R for data scientists book by Hadley Wickam. I am also focusing on learning to use R markdown and git at the same time. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Remember that this is how to bold text: **Bold**
 
-```{r cars}
-summary(cars)
+## Data Visualisation
+
+Data Exploration is the art of looking at your data, rapidly generating hypotheses, quickly testing them and then repeating the process again and again.
+
+The goal is to generate many possible leads that can later then be explored in more depth.
+
+You begin by asking a question. 
+It's important to try to answer it yourself, and to be precise. e.g. what is the relationship between the variables (instead of just saying yes and no)
+
+Lets start with the Fuel Economy data set: mpg
+
+These are the details about the data set.
+
+Fuel economy data from 1999 and 2008 for 38 popular models of car
+
+This dataset contains a subset of the fuel economy data that the EPA makes available on http://fueleconomy.gov. It contains only models which had a new release every year between 1999 and 2008 - this was used as a proxy for the popularity of the car.
+
+```{r mpg_data}
+#The ? function doesn't work in markdown.
+#?mpg
+
+#Fuel economy data from 1999 and 2008 for 38 popular models of car
+
+summary(mpg)
+length(unique(mpg$cty))
 ```
 
-## Including Plots
+The question is: Do cars with bigger engines use more fuel than cars with smaller engines? What is the relationship?
 
-You can also embed plots, for example:
+I expect it to be to be true and a negative linear relationship (bigger engine, lower fuel economy).  
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+***
+
+#Introduction to GGPlot
+
+Important variables:
+
+cty: city miles per gallon  
+displ: engine displacement, in liters  
+hwy: highway miles per gallon  
+
+Focusing on the highway miles per gallon for now.
+
+```{r plot1_mpg}
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y= hwy))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+The relationship is negative. But there are a few cars that have an unexpected high range for their engine size. Could these cars be hybrids or something?
 
-```{r}
+```{r plot2_mpg}
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y= hwy, color = class))
+```
+
+By differentiating the plot by class, we can see that these cars are sport cars. This makes sense, due to the smaller size of the cars.
+
+This plot is all blue... it is outside the aesthetic.
+
+```{r plot3_mpg}
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y= hwy), color="blue")
+```
+
+```{r plot4_mpg}
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y= hwy))+
+  facet_wrap(~ class, nrow=2)
+```
+
+```{r plot5_mpg, include=FALSE}
+ggplot(data = mpg)+
+  geom_point(mapping = aes(x=displ, y= hwy))+
+  facet_wrap(~ cty)
+```
+
+```{r smooth_plot}
+ggplot(data = mpg) + 
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+
+```{r smooth_plot2}
+ggplot(data = mpg) + 
+  geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv))
+```
+
+```{r multi_plot_1}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x=displ, y= hwy, color = drv))+
+  geom_smooth(mapping = aes(x = displ, y = hwy, color = drv, linetype = drv))
+```
+
+```{r multi_plot_2}
+ggplot(data = mpg, mapping = aes(x=displ, y= hwy)) + 
+  geom_point(mapping=aes(color = class))+
+  geom_smooth()
+```
+
+```{r multi_plot_3}
+ggplot(data = mpg, mapping = aes(x=displ, y= hwy)) + 
+  geom_point(mapping=aes(color = class))+
+  geom_smooth(data=filter(mpg,class=="subcompact"),se=FALSE)
+```
+
+#Diamonds and Bar charts
+
+Prices of 50,000 round cut diamonds
+
+Description
+
+A dataset containing the prices and other attributes of almost 54,000 diamonds. The variables are as follows:
+
+A data frame with 53940 rows and 10 variables:
+
+price:price in US dollars (\$326–\$18,823)  
+carat:weight of the diamond (0.2–5.01)  
+cut:quality of the cut (Fair, Good, Very Good, Premium, Ideal)  
+color:diamond colour, from J (worst) to D (best)  
+
+clarity:a measurement of how clear the diamond is (I1 (worst), SI1,   SI2, VS1, VS2, VVS1, VVS2, IF (best))  
+  
+x:length in mm (0–10.74)  
+y:width in mm (0–58.9)  
+
+z:depth in mm (0–31.8)  
+
+depth:total depth percentage = z / mean(x, y) = 2 * z / (x + y) (43–79)
+
+table:width of top of diamond relative to widest point (43–95)
+
+```{r bar1}
+
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut))
+
+```
+
+```{r bar2}
+ggplot(data=diamonds)+
+  stat_count(mapping=aes(x=cut))
+```
+
+
+```{r override_stat}
+
+demo <- tribble(
+  ~a, ~b,
+  "bar1", 10,
+  "bar2", 20,
+  "bar3", 30
+)
+
+ggplot(data=demo)+
+  geom_bar(mapping=aes(x=a,y=b),stat="identity")
+
+```
+
+```{r override_calc_var}
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut,y=..prop..,group=1))
+```
+
+```{r play_with_stats}
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut,y=price),stat="sum")
+
+```
+
+```{r play_with_stats2}
+
+
+demo <- tribble(
+  ~a, ~b,
+  "bar1", 10,
+  "bar2", 20,
+  "bar3", 30,
+  "bar3", 40.5252
+)
+
+ggplot(data=demo)+
+#  geom_bar(mapping=aes(x=a),stat="identity")
+   geom_col(mapping=aes(x=a,y=b))
+
+```
+
+```{r stat_summ_plot}
+
+ggplot(data=diamonds)+
+  stat_summary(mapping=aes(x=cut,y=depth),
+               fun.ymin=min,
+               fun.ymax=max,
+               fun.y=median)
+
+
+```
+
+```{r bar_fill1}
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut,fill=cut))
+```
+
+```{r bar_fill2}
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut,fill=clarity))
+```
+
+```{r bar_position_1}
+#position identity. All would overlap. More useful for 
+#point plots. To see the overlap have to set the 
+#transparency (alpha) or fill = NA (completely transparent)
+
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut,fill=clarity),alpha=1/5,
+           position="identity")
+
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut,color=clarity),position="identity",fill=NA)
+
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut,fill=clarity),position="fill")
+
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=clarity,fill=cut),position="dodge")
+
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut,fill=clarity),position="dodge")
+
+
+```
+
+#Coordinate Systems
+
+```{r coordinateflip}
+ggplot(data=mpg,mapping=aes(x=class,y=hwy))+
+  geom_boxplot()+
+  coord_flip()
+```
+
+```{r map_nz}
+nz<-map_data("nz")
+
+#??? group=group??
+
+ggplot(nz, aes(long, lat, group=group))+
+  geom_polygon(fill="white",colour="black")+
+  coord_quickmap()
+  
+```
+
+```{r polar}
+
+bar <- ggplot(data=diamonds)+
+       geom_bar(mapping=aes(x=cut,fill=cut),
+           show.legend=FALSE,
+           width=1)+
+       theme(aspect.ratio=1)+
+       labs(x=NULL,y=NULL)
+  
+bar+coord_flip()
+bar+coord_polar()
+
+```
+
+```{r polar_pie}
+ 
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=1,fill=cut),
+           position="stack",
+           width=1)+
+  labs(x=NULL,y=NULL)+
+  theme(aspect.ratio=1)+
+  coord_polar(theta="y")
 
 ```
 
