@@ -1,0 +1,50 @@
+---
+title: "Exploratory Data Analysis"
+author: "Tinus Cloete"
+date: "December 24, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+library("plotly")
+
+library(nycflights13)
+```
+
+# Data Exploration
+
+"There is no routine statistical questions only questionable statistical routines." 
+
+Sir David Cox.
+
+Even though there aren't routine questions, there are 2 questions that generally help.
+* What is the type of variation within my variables?
+* What type of covariation are there between my variables?
+
+##Distributions of a Single Variable
+
+For Categorical variables use a bar plot.
+
+```{r barplot}
+
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut, fill=cut))
+
+```
+
+For Continuous variables use histograms (geom histogram) or frequency plots (geom freqpoly).
+
+```{r histogram1}
+
+ggplot(data=diamonds)+
+  geom_histogram(mapping=aes(x=carat), binwidth = 0.5)
+
+```
+
+```{r histogram2}
+
+```
+
+
